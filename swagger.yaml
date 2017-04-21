@@ -1,0 +1,797 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: Monday API
+tags:
+  - name: Super Admin
+  - name: Admin
+  - name: Mobile
+  - name: Basic
+  - name: User
+  - name: Group
+  - name: Adaptor
+  - name: Card
+  - name: Workflow
+  - name: Page
+schemes:
+  - https
+  - http
+securityDefinitions:
+  oauth2:
+    type: oauth2
+    tokenUrl: 'http://example.com/oauth/token'
+    flow: password
+    scopes:
+      write: allows modifying resources
+      read: allows reading resources
+  basic:
+    type: basic
+security:
+  - basic: []
+  - oauth2:
+      - read
+      - write
+produces:
+  - application/json
+consumes:
+  - application/json
+paths:
+  /login:
+    post:
+      tags:
+        - Basic
+        - Super Admin
+        - Admin
+        - Mobile
+      description: Used to login from cms.
+      security: []
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: username
+          in: formData
+          required: true
+          type: string
+        - name: password
+          in: formData
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/User'
+        '401':
+          description: Invalid username or password
+  /forgotpwd:
+    get:
+      tags:
+        - Basic
+        - Super Admin
+        - Admin
+        - Mobile
+      description: It will send an email with security code.
+      security: []
+      parameters:
+        - name: username
+          in: query
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Success
+  /resetpwd:
+    get:
+      tags:
+        - Basic
+        - Super Admin
+        - Admin
+      description: Used to reset the password using security code
+      security: []
+      parameters:
+        - name: code
+          in: query
+          required: true
+          type: string
+        - name: password
+          in: query
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Success
+  /changepwd:
+    get:
+      tags:
+        - Basic
+        - Super Admin
+        - Admin
+        - Mobile
+      description: Used to change the password.
+      security: []
+      parameters:
+        - name: oldpwd
+          in: query
+          required: true
+          type: string
+        - name: newpwd
+          in: query
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Success
+  /admin/adaptors/configured:
+    get:
+      tags:
+        - Super Admin
+        - Admin
+        - Adaptor
+      description: It will return all configured adaptors
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Adaptor'
+  /super/adaptors/unconfigured:
+    get:
+      tags:
+        - Super Admin
+        - Adaptor
+      description: It will return all non configured adaptors
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Adaptor'
+  /mobile/adaptors/configured:
+    get:
+      tags:
+        - Mobile
+        - Adaptor
+      description: It will return all user configured adaptors
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Adaptor'
+  /mobile/adaptors/unconfigured:
+    get:
+      tags:
+        - Mobile
+        - Adaptor
+      description: It will return all non user configured adaptors
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Adaptor'
+  '/mobile/adaptors/{adaptor}':
+    get:
+      tags:
+        - Mobile
+        - Adaptor
+      description: It will return the description of the adaptor
+      parameters:
+        - name: adaptor
+          in: path
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/AdaptorDescription'
+  '/super/adaptors/configure/{adaptor}':
+    get:
+      tags:
+        - Super Admin
+        - Adaptor
+      description: Get the existing configuration for given adaptor
+      parameters:
+        - name: adaptor
+          in: path
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/AdaptorConfiguration'
+        '400':
+          description: Configuration not found
+    post:
+      tags:
+        - Super Admin
+        - Adaptor
+      description: Create new configuration or edit existing configuration.
+      parameters:
+        - name: adaptor
+          in: path
+          required: true
+          type: string
+        - in: body
+          name: body
+          schema:
+            $ref: '#/definitions/AdaptorConfiguration'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/AdaptorConfiguration'
+    delete:
+      tags:
+        - Super Admin
+        - Adaptor
+      description: Delete configuration for given adaptor
+      parameters:
+        - name: adaptor
+          in: path
+          type: string
+          required: true
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: No configuration found for this adaptor.
+  /admin/users:
+    get:
+      tags:
+        - Super Admin
+        - Admin
+        - User
+      description: Get all users
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/User'
+  /super/users:
+    post:
+      tags:
+        - Super Admin
+        - User
+      description: Create or update user
+      parameters:
+        - in: body
+          name: body
+          schema:
+            $ref: '#/definitions/User'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/User'
+  '/super/users/{userId}':
+    get:
+      tags:
+        - Super Admin
+        - User
+      description: Get user details
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          type: integer
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/User'
+        '400':
+          description: User not found
+    delete:
+      tags:
+        - Super Admin
+        - User
+      description: Delete user
+      parameters:
+        - name: userId
+          in: path
+          type: number
+          required: true
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: No user found.
+  /admin/groups:
+    get:
+      tags:
+        - Super Admin
+        - Admin
+        - Group
+      description: Get all groups
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Group'
+  /super/groups:
+    post:
+      tags:
+        - Super Admin
+        - Group
+      description: Create or update group
+      parameters:
+        - in: body
+          name: body
+          schema:
+            $ref: '#/definitions/Group'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Group'
+  '/super/groups/{groupId}':
+    get:
+      tags:
+        - Super Admin
+        - Group
+      description: Get group details
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          type: integer
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Group'
+        '400':
+          description: Group not found
+    delete:
+      tags:
+        - Super Admin
+        - Group
+      description: Delete group
+      parameters:
+        - name: groupId
+          in: path
+          type: number
+          required: true
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: No group found.
+  /admin/workflows:
+    get:
+      tags:
+        - Workflow
+        - Admin
+      description: Get all workflows available to this user.
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/WorkflowLite'
+    post:
+      tags:
+        - Workflow
+        - Admin
+      description: Create or update workflow
+      parameters:
+        - in: body
+          name: body
+          schema:
+            $ref: '#/definitions/Workflow'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Workflow'
+  '/admin/workflows/{workflowId}':
+    get:
+      tags:
+        - Admin
+        - Workflow
+      description: Get workflow details
+      parameters:
+        - name: workflowId
+          in: path
+          required: true
+          type: integer
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Workflow'
+        '400':
+          description: Workflow not found
+    delete:
+      tags:
+        - Admin
+        - Workflow
+      description: Delete workflow
+      parameters:
+        - name: workflowId
+          in: path
+          type: number
+          required: true
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: No workflow found.
+  /admin/actions:
+    get:
+      tags:
+        - Workflow
+        - Adaptor
+        - Admin
+      description: Get all actions in all adaptors available to this user.
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/AdaptorFull'
+  '/admin/{adaptor}/actions':
+    get:
+      tags:
+        - Super Admin
+        - Admin
+        - Adaptor
+      description: Return all actions available in given adaptor
+      parameters:
+        - name: adaptor
+          in: path
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ActionLite'
+  '/admin/{adaptor}/actions/{action}':
+    get:
+      tags:
+        - Workflow
+        - Adaptor
+        - Admin
+      description: Return complete details of an action
+      parameters:
+        - name: adaptor
+          in: path
+          type: string
+          required: true
+        - name: action
+          in: path
+          type: string
+          required: true
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Action'
+        '400':
+          description: No action found.
+  '/admin/{adaptor}/pages':
+    get:
+      tags:
+        - Admin
+        - Workflow
+        - Page
+      description: Get all pages in the given adaptor
+      parameters:
+        - name: adaptor
+          in: path
+          type: string
+          required: true
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/PageLite'
+    post:
+      tags:
+        - Admin
+        - Page
+      description: Create or update the page
+      parameters:
+        - name: adaptor
+          in: path
+          type: string
+          required: true
+        - in: body
+          name: body
+          schema:
+            $ref: '#/definitions/Page'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Page'
+  '/admin/{adaptor}/pages/{pageId}':
+    get:
+      tags:
+        - Admin
+        - Page
+      description: Get page details
+      parameters:
+        - name: adaptor
+          in: path
+          type: string
+          required: true
+        - name: pageId
+          in: path
+          required: true
+          type: integer
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Page'
+        '400':
+          description: Page not found
+    delete:
+      tags:
+        - Admin
+        - Page
+      description: Delete page
+      parameters:
+        - name: adaptor
+          in: path
+          type: string
+          required: true
+        - name: pageId
+          in: path
+          type: number
+          required: true
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: No page found.
+  '/mobile/cards/before/{time}':
+    get:
+      tags:
+        - Mobile
+        - Card
+      description: >-
+        Returns the 20 cards before the given time. Optionally we can specify
+        the size of cards.
+      parameters:
+        - name: time
+          in: path
+          type: number
+          required: true
+        - name: size
+          in: query
+          type: integer
+          required: false
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Card'
+  '/mobile/cards/after/{time}':
+    get:
+      tags:
+        - Mobile
+        - Card
+      description: >-
+        Returns the 20 cards after the given time. Optionally we can specify the
+        size of cards.
+      parameters:
+        - name: time
+          in: path
+          type: number
+          required: true
+        - name: size
+          in: query
+          type: integer
+          required: false
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Card'
+  '/mobile/cards/{cardId}':
+    delete:
+      tags:
+        - Mobile
+        - Card
+      description: Delete card
+      parameters:
+        - name: cardId
+          in: path
+          type: number
+          required: true
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Card not found.
+  '/mobile/cards/{cardId}/settings':
+    post:
+      tags:
+        - Mobile
+        - Card
+      description: Update the card settings
+      parameters:
+        - name: cardId
+          in: path
+          type: number
+          required: true
+        - name: settings
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/CardSettings'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/CardSettings'
+        '400':
+          description: Card not found.
+  '/mobile/cards/{cardId}/action/{actionId}':
+    post:
+      tags:
+        - Mobile
+        - Card
+      description: Perform an action on the card
+      parameters:
+        - name: cardId
+          in: path
+          type: number
+          required: true
+        - name: actionId
+          in: path
+          type: number
+          required: true
+        - name: input
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/FlowInput'
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Card not found.
+  /mobile/workflow/search:
+    get:
+      tags:
+        - Mobile
+        - Workflow
+      description: Search for a workflow woth given query
+      parameters:
+        - name: query
+          in: query
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/WorkflowLite'
+  '/mobile/workflow/{workflowId}/invoke':
+    post:
+      tags:
+        - Mobile
+        - Workflow
+      description: Invoke workflow
+      parameters:
+        - name: workflowId
+          in: path
+          type: number
+          required: true
+        - name: input
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/FlowInput'
+      responses:
+        '200':
+          description: Success
+        '400':
+          description: Workflow not found.
+definitions:
+  User:
+    type: object
+    properties:
+      name:
+        type: string
+  Group:
+    type: object
+    properties:
+      name:
+        type: string
+  Adaptor:
+    type: object
+    properties:
+      name:
+        type: string
+  AdaptorConfiguration:
+    type: object
+    properties:
+      name:
+        type: string
+  AdaptorDescription:
+    type: object
+    properties:
+      name:
+        type: string
+  WorkflowLite:
+    type: object
+    properties:
+      name:
+        type: string
+  Workflow:
+    type: object
+    properties:
+      name:
+        type: string
+  Action:
+    type: object
+    properties:
+      name:
+        type: string
+  ActionLite:
+    type: object
+    properties:
+      name:
+        type: string
+  AdaptorFull:
+    type: object
+    properties:
+      actions:
+        type: array
+        items:
+          $ref: '#/definitions/ActionLite'
+  Page:
+    type: object
+    properties:
+      name:
+        type: string
+  PageLite:
+    type: object
+    properties:
+      name:
+        type: string
+  Card:
+    type: object
+    properties:
+      name:
+        type: string
+  CardSettings:
+    type: object
+    properties:
+      name:
+        type: string
+  FlowInput:
+    type: object
+    properties:
+      name:
+        type: string
